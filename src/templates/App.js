@@ -1,31 +1,23 @@
+import '../assets/css/app.css';
 
-import Header from './base/header';
-import {useState} from "react";
+import Header from './base/Header'
+import SideBar from './base/SideBar'
+import PlayerDatas from './module/PlayerDatas'
 
-function Content() {
+
+function App() {
 
 
 	return (
 		<div className="App">
-			<Header setPlayerData={setPlayerData}/>
-			<div className="container">
-				{
-					JSON.stringify(playerData) != '{}'
-						?
-						<>
-							<img width="100" height="100" src={"https://ddragon.leagueoflegends.com/cdn/12.21.1/img/profileicon/"+playerData.profileIconId+".png"}></img>
-							<p>{playerData.name}</p>
-							<p>Level : {playerData.summonerLevel}</p>
-						</>
-						:
-						<>
-							<p> player data not found </p>
-						</>
-				}
+			<Header />
+			<SideBar />
+			<div className="module">
+				<PlayerDatas />
 			</div>
-		</div>
 
+		</div>
 	);
 }
 
-export default Content;
+export default App;
