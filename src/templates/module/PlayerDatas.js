@@ -8,38 +8,61 @@ import {
 	FormControl,
 	Grid,
 	InputLabel,
+	List,
+	ListItem,
 	MenuItem, Paper, styled,
 	TextField,
-	Typography, useTheme
+	Typography
 } from "@mui/material";
-import Select, { SelectChangeEvent } from '@mui/material/Select';
+import { Star } from '@mui/icons-material';
+import Select from '@mui/material/Select';
 
 function PlayerDatas() {
+	
+	const [platform, setPlatform] = useState('');
 	const [region, setRegion] = useState('');
 	const [searchText, setSearchText] = useState("");
 	const [playerData, setPlayerData] = useState({});
 	const [playerDetailsData, setPlayerDetailsData] = useState({});
+	const [playerMatchHistory, setPlayerMatchHistory] = useState({});
 	const API_KEY = "RGAPI-6bdc116a-eca0-497f-ab0e-0c5892fd2502";
 
-	const handleChange = (event: SelectChangeEvent) => {
-		setRegion(event.target.value);
+	const handleChange = (event) => {
+		setPlatform(event.target.value);
+		const europe = ['euw1', 'eun1', 'tr1', 'ru1'];
+		const america = ['na1', 'br1', 'la1', 'la2'];
+		const asia = ['jp1', 'kr1'];
+		const sea = ['oc1'];
+
+
+		if (europe.includes(event.target.value)) {
+			setRegion('europe');
+		} else if (america.includes(event.target.value)) {
+			setRegion('america');
+		} else if (asia.includes(event.target.value)) {
+			setRegion('asia');
+		} else if (sea.includes(event.target.value)) {
+			setRegion('sea');
+		}
+		
 	};
 
-	function searchForPlayer(event, region) {
+	function searchForPlayer(event, platform) {
 		// On setup l'appel API
-		var APICallString = "https://"+region+".api.riotgames.com/lol/summoner/v4/summoners/by-name/"+ searchText + "?api_key="+ API_KEY;
+		var APICallString = "https://"+platform+".api.riotgames.com/lol/summoner/v4/summoners/by-name/"+ searchText + "?api_key="+ API_KEY;
 		// On gère l'appel
 		axios.get(APICallString).then(function(response) {
 			// Success
 			setPlayerData(response.data);
 			getPlayerDetailsById(response.data.id);
+			getPlayerHistoryById(response.data.puuid)
 		}).catch(function(error){
 			setPlayerData({});
 		})
 	}
 
 	function getPlayerDetailsById(summonerId) {
-		var APICallString = "https://"+region+".api.riotgames.com/lol/league/v4/entries/by-summoner/"+ summonerId + "?api_key="+ API_KEY;
+		var APICallString = "https://"+platform+".api.riotgames.com/lol/league/v4/entries/by-summoner/"+ summonerId + "?api_key="+ API_KEY;
 		// On gère l'appel
 		axios.get(APICallString).then(function(response) {
 			// Success
@@ -49,7 +72,42 @@ function PlayerDatas() {
 		})
 	}
 
-	console.log(playerDetailsData);
+
+	function getPlayerHistoryById(puuId) {
+
+		var APICallString = "https://"+region+".api.riotgames.com/lol/match/v5/matches/by-puuid/"+ puuId + "/ids?api_key="+ API_KEY;
+		// On gère l'appel
+		axios.get(APICallString).then(function(response) {
+			// Success
+			getMultipleMatch(response.data);
+		}).catch(function(error){
+			
+		})
+	}
+
+	function getMultipleMatch(matchIdList) {
+
+		let matchs = [];
+		let promises = [];
+		for (var i = 0; i < matchIdList.length; i++) {
+			promises.push(
+				axios.get("https://"+region+".api.riotgames.com/lol/match/v5/matches/"+ matchIdList[i] + "?api_key="+ API_KEY).then(response => {
+				// do something with response
+					matchs.push(response.data.info);
+				}).catch(function(error){
+					matchs.push({});
+				})
+			)
+		}
+
+		Promise.all(promises).then(() => setPlayerMatchHistory(matchs));
+	
+	}
+
+	
+
+	console.log(playerData);
+	console.log(playerMatchHistory);
 
 	const Item = styled(Paper)(({ theme }) => ({
 		backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -67,7 +125,7 @@ function PlayerDatas() {
 					<Select
 						labelId="select_region_label"
 						id="select_region"
-						value={region}
+						value={platform}
 						onChange={handleChange}
 						label="Région"
 					>
@@ -85,43 +143,114 @@ function PlayerDatas() {
 					</Select>
 				</FormControl>
 				<FormControl sx={{ m: 1, minWidth: 120 }}>
-					<TextField id="standard-basic" label="Standard" variant="standard" onChange={e => setSearchText(e.target.value)} onKeyDown={e => e.key === 'Enter' ? searchForPlayer(e, region) : null}/>
+					<TextField id="standard-basic" label="Nom d'invocateur" variant="standard" onChange={e => setSearchText(e.target.value)} onKeyDown={e => e.key === 'Enter' ? searchForPlayer(e, platform) : null}/>
 				</FormControl>
 
 
 			</Grid>
 			<Grid item xs={12} className="results">
-				{
-					JSON.stringify(playerData) != '{}'
-						?
-						<>
+				<Item>
+					{
+						JSON.stringify(playerData) !== '{}'
+							?
+							<>
 
-							<Card sx={{ display: 'flex' }}>
-								<CardMedia
-									component="img"
-									sx={{ width: 100 }}
-									image={"https://ddragon.leagueoflegends.com/cdn/12.21.1/img/profileicon/"+playerData.profileIconId+".png"}
-								/>
-								<Box sx={{ display: 'flex', flexDirection: 'column' }}>
-									<CardContent sx={{ flex: '1 0 auto' }}>
-										<Typography component="div" variant="h5">
-											{playerData.name}
-										</Typography>
-										<Typography variant="subtitle1" color="text.secondary" component="div">
-											Level : {playerData.summonerLevel}
-										</Typography>
-									</CardContent>
-								</Box>
-								<Box sx={{ display: 'flex', flexDirection: 'column' }}>
-									{ playerDetailsData.map(function(detail) { return <CardContent><Typography component="div" variant="h5"> {detail.queueType} </Typography><Typography variant="subtitle1" color="text.secondary" component="div"> Rank : {detail.tier} {detail.rank} </Typography></CardContent>; }) }
-								</Box>
-							</Card>
-						</>
-						:
-						<>
-							<p> player data not found </p>
-						</>
-				}
+								<Card sx={{ display: 'flex', justifyContent: 'space-between' }}>
+									<CardMedia
+										component="img"
+										sx={{ width: 100 }}
+										image={"https://ddragon.leagueoflegends.com/cdn/12.21.1/img/profileicon/"+playerData.profileIconId+".png"}
+									/>
+									<Box sx={{ display: 'flex', flexDirection: 'column' }}>
+										<CardContent sx={{ flex: '1 0 auto' }}>
+											<Typography component="div" variant="h5">
+												{playerData.name}
+											</Typography>
+											<Typography variant="subtitle1" color="text.secondary" component="div">
+												Level : {playerData.summonerLevel}
+											</Typography>
+										</CardContent>
+									</Box>
+									
+									{ JSON.stringify(playerDetailsData) !== '{}' ?  
+										playerDetailsData.map(function(detail) { 
+											return  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+														<CardContent>
+															<Typography component="div" variant="h5"> {detail.queueType} </Typography>
+															<Typography variant="subtitle1" color="text.secondary" component="div"> 
+																{detail.tier} {detail.rank} 
+															</Typography>
+															<Typography variant="subtitle2" component="div"> 
+																{detail.leaguePoints}LP | ({detail.wins}W - {detail.losses}L)
+															</Typography>
+														</CardContent>
+													</Box>; 
+											}) 
+										: 
+											null 
+									}
+									
+								</Card>
+
+								
+							</>
+							:
+							<>
+								<p> player data not found </p>
+							</>
+					}
+				</Item>
+				<Item>
+					
+					{ JSON.stringify(playerMatchHistory) !== '{}' ?  
+
+						
+							playerMatchHistory.map((match) => {
+								if (JSON.stringify(match) !== '{}') {
+									console.log(match);
+
+									
+									return <Card sx={{ display: 'flex', justifyContent: 'space-between' }}>  
+												
+													{ match.teams.map((team) => {
+														console.log(team)
+														return  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+																	<CardContent sx={{ flex: '1 0 auto' }}>
+																		<Typography component="div" variant="h5"> {team.win == true ? 'Victoire' : 'Défaite'} </Typography>
+																	</CardContent>
+																	<List>
+																			{ match.participants.map((participant)=> {
+																				if (participant.teamId == team.teamId) {
+																					if (participant.summonerId == playerData.id) {
+																						return <ListItem><Star />{participant.summonerName} ({participant.kills}/{participant.deaths}/{participant.assists}) </ListItem>
+																					} else {
+																						return <ListItem>{participant.summonerName} ({participant.kills}/{participant.deaths}/{participant.assists})</ListItem>
+																					}
+																				}
+																			})}
+																	</List>
+																		
+																</Box>
+													}) }
+													
+												
+											</Card>; 
+								
+								
+									
+									
+								}
+							}) 
+								
+							
+						: 
+							console.log('null') 
+					}
+							
+						
+						
+					
+				</Item>
 			</Grid>
 		</Grid>
 	);

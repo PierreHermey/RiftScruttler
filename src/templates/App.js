@@ -1,22 +1,29 @@
 import '../assets/css/app.css';
 
-import Header from './base/Header'
-import SideBar from './base/SideBar'
-import PlayerDatas from './module/PlayerDatas'
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import PlayerDatas from './module/PlayerDatas';
+import PrimarySearchAppBar from './base/Header';
 
+const darkTheme = createTheme({
+	palette: {
+	  mode: 'dark',
+	},
+});
 
 function App() {
 
 
 	return (
-		<div className="App">
-			<Header />
-			<SideBar />
-			<div className="module">
-				<PlayerDatas />
+		<ThemeProvider theme={darkTheme}>
+			<CssBaseline />
+			<div className="App">
+				<PrimarySearchAppBar />
+				<div className="module">
+					<PlayerDatas />
+				</div>
 			</div>
-
-		</div>
+		</ThemeProvider>
 	);
 }
 
