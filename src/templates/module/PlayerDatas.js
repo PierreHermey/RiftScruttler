@@ -255,7 +255,7 @@ function PlayerDatas() {
 																	</TableCell>
 																	<TableCell align="center">{participant.kills}/{participant.deaths}/{participant.assists}</TableCell>
 																	<TableCell align="center">{participant.totalMinionsKilled + participant.neutralMinionsKilled}</TableCell>
-																	<TableCell align="center">{participant.goldEarned}</TableCell>
+																	<TableCell align="center">{Math.round((participant.goldEarned / 1000) * 10) / 10  + 'k'}</TableCell>
 																</TableRow>
 
 															}

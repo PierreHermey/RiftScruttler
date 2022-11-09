@@ -19,7 +19,7 @@ function App() {
 			<CssBaseline />
 			<div className="App">
 				{/*<PrimarySearchAppBar />*/}
-				<div className="module">
+				<div className="module" style={{padding: '3rem'}}>
 					<PlayerDatas />
 				</div>
 			</div>
