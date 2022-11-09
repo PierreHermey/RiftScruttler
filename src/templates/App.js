@@ -18,7 +18,7 @@ function App() {
 		<ThemeProvider theme={darkTheme}>
 			<CssBaseline />
 			<div className="App">
-				<PrimarySearchAppBar />
+				{/*<PrimarySearchAppBar />*/}
 				<div className="module">
 					<PlayerDatas />
 				</div>

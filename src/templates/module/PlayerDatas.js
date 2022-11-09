@@ -8,24 +8,22 @@ import {
 	FormControl,
 	Grid,
 	InputLabel,
-	List,
-	ListItem,
-	MenuItem, Paper, styled,
+	MenuItem, Paper, styled, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
 	TextField,
 	Typography
 } from "@mui/material";
-import { Star } from '@mui/icons-material';
 import Select from '@mui/material/Select';
+import ItemsPopover from "../component/ItemsPopover";
 
 function PlayerDatas() {
-	
+
 	const [platform, setPlatform] = useState('');
 	const [region, setRegion] = useState('');
 	const [searchText, setSearchText] = useState("");
 	const [playerData, setPlayerData] = useState({});
 	const [playerDetailsData, setPlayerDetailsData] = useState({});
 	const [playerMatchHistory, setPlayerMatchHistory] = useState({});
-	const API_KEY = "RGAPI-6bdc116a-eca0-497f-ab0e-0c5892fd2502";
+	const API_KEY = "RGAPI-d2c0fb50-2747-49fe-abb0-260a523f65b8";
 
 	const handleChange = (event) => {
 		setPlatform(event.target.value);
@@ -44,7 +42,7 @@ function PlayerDatas() {
 		} else if (sea.includes(event.target.value)) {
 			setRegion('sea');
 		}
-		
+
 	};
 
 	function searchForPlayer(event, platform) {
@@ -81,7 +79,7 @@ function PlayerDatas() {
 			// Success
 			getMultipleMatch(response.data);
 		}).catch(function(error){
-			
+
 		})
 	}
 
@@ -101,10 +99,10 @@ function PlayerDatas() {
 		}
 
 		Promise.all(promises).then(() => setPlayerMatchHistory(matchs));
-	
+
 	}
 
-	
+
 
 	console.log(playerData);
 	console.log(playerMatchHistory);
@@ -118,7 +116,7 @@ function PlayerDatas() {
 	}));
 
 	return (
-		<Grid container className="PlayerDatas">
+		<Grid container className="PlayerDatas" spacing={5}>
 			<Grid item xs={12} className="searchbar-container">
 				<FormControl sx={{ m: 1, minWidth: 120 }}>
 					<InputLabel id="select_region_label">Région</InputLabel>
@@ -148,108 +146,133 @@ function PlayerDatas() {
 
 
 			</Grid>
-			<Grid item xs={12} className="results">
+			<Grid item xs={3}>
 				<Item>
 					{
 						JSON.stringify(playerData) !== '{}'
-							?
-							<>
+							&&
+							<Card>
+							<CardMedia
+								component="img"
+								sx={{ height: 200 }}
+								image={"https://ddragon.leagueoflegends.com/cdn/12.21.1/img/profileicon/"+playerData.profileIconId+".png"}
+							/>
+							<Box sx={{ display: 'flex', flexDirection: 'column' }}>
+								<CardContent sx={{ flex: '1 0 auto' }}>
+									<Typography component="div" variant="h5">
+										{playerData.name}
+									</Typography>
+									<Typography variant="subtitle1" color="text.secondary" component="div">
+										Level : {playerData.summonerLevel}
+									</Typography>
+								</CardContent>
+							</Box>
 
-								<Card sx={{ display: 'flex', justifyContent: 'space-between' }}>
-									<CardMedia
-										component="img"
-										sx={{ width: 100 }}
-										image={"https://ddragon.leagueoflegends.com/cdn/12.21.1/img/profileicon/"+playerData.profileIconId+".png"}
-									/>
-									<Box sx={{ display: 'flex', flexDirection: 'column' }}>
-										<CardContent sx={{ flex: '1 0 auto' }}>
-											<Typography component="div" variant="h5">
-												{playerData.name}
-											</Typography>
-											<Typography variant="subtitle1" color="text.secondary" component="div">
-												Level : {playerData.summonerLevel}
-											</Typography>
-										</CardContent>
-									</Box>
-									
-									{ JSON.stringify(playerDetailsData) !== '{}' ?  
-										playerDetailsData.map(function(detail) { 
-											return  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-														<CardContent>
-															<Typography component="div" variant="h5"> {detail.queueType} </Typography>
-															<Typography variant="subtitle1" color="text.secondary" component="div"> 
-																{detail.tier} {detail.rank} 
-															</Typography>
-															<Typography variant="subtitle2" component="div"> 
-																{detail.leaguePoints}LP | ({detail.wins}W - {detail.losses}L)
-															</Typography>
-														</CardContent>
-													</Box>; 
-											}) 
-										: 
-											null 
-									}
-									
-								</Card>
+							{ JSON.stringify(playerDetailsData) !== '{}' ?
+								playerDetailsData.map(function(detail) {
+									return  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+												<CardMedia
+													component="img"
+													sx={{ width: 100, margin: 'auto' }}
+													image={"/ranked-emblems/Emblem_"+detail.tier+".png"}
+												/>
+												<CardContent>
+													<Typography component="div" variant="h5"> {detail.queueType == 'RANKED_SOLO_5x5' ? 'Solo/Duo' : 'Flex'} </Typography>
+													<Typography variant="subtitle1" color="text.secondary" component="div">
+														{detail.tier} {detail.rank}
+													</Typography>
+													<Typography variant="subtitle2" component="div">
+														{detail.leaguePoints}LP | ({detail.wins}W - {detail.losses}L)
+													</Typography>
+												</CardContent>
+											</Box>;
+									})
+								:
+									null
+							}
 
-								
-							</>
-							:
-							<>
-								<p> player data not found </p>
-							</>
+						</Card>
 					}
 				</Item>
+			</Grid>
+			<Grid item xs={9}>
 				<Item>
-					
-					{ JSON.stringify(playerMatchHistory) !== '{}' ?  
 
-						
-							playerMatchHistory.map((match) => {
-								if (JSON.stringify(match) !== '{}') {
-									console.log(match);
+					{ JSON.stringify(playerMatchHistory) !== '{}' &&
 
-									
-									return <Card sx={{ display: 'flex', justifyContent: 'space-between' }}>  
-												
-													{ match.teams.map((team) => {
-														console.log(team)
-														return  <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-																	<CardContent sx={{ flex: '1 0 auto' }}>
-																		<Typography component="div" variant="h5"> {team.win == true ? 'Victoire' : 'Défaite'} </Typography>
-																	</CardContent>
-																	<List>
-																			{ match.participants.map((participant)=> {
-																				if (participant.teamId == team.teamId) {
-																					if (participant.summonerId == playerData.id) {
-																						return <ListItem><Star />{participant.summonerName} ({participant.kills}/{participant.deaths}/{participant.assists}) </ListItem>
-																					} else {
-																						return <ListItem>{participant.summonerName} ({participant.kills}/{participant.deaths}/{participant.assists})</ListItem>
-																					}
-																				}
-																			})}
-																	</List>
-																		
-																</Box>
-													}) }
-													
-												
-											</Card>; 
-								
-								
-									
-									
-								}
-							}) 
-								
-							
-						: 
-							console.log('null') 
+						playerMatchHistory.map((match) => {
+							if (JSON.stringify(match) !== '{}') {
+
+								return <Card sx={{ display: 'flex', marginBottom: '20px'}}>
+									{ match.teams.map((team) => {
+										return <TableContainer sx={{ width: '50%'}} >
+												<Table sx={{ minWidth: 650 }} aria-label="simple table"  style={team.win == false ? {background: 'rgba(255,75,75,0.5)'} : {direction: 'rtl', background: 'rgba(75,240,255,0.5)'}}>
+													<TableHead>
+														<TableRow>
+															<TableCell>Nom d'invocateur</TableCell>
+															<TableCell align="center">
+																<img alt="champion icon" style={{maxHeight: '30px'}} src="https://ddragon.leagueoflegends.com/cdn/5.5.1/img/ui/champion.png"></img>
+															</TableCell>
+															<TableCell align="center">
+																<img alt="KDA" style={{maxHeight: '30px'}} src="https://ddragon.leagueoflegends.com/cdn/5.5.1/img/ui/items.png"></img>
+															</TableCell>
+															<TableCell align="center">
+																<img alt="KDA" style={{maxHeight: '30px'}} src="https://ddragon.leagueoflegends.com/cdn/5.5.1/img/ui/score.png"></img>
+															</TableCell>
+
+															<TableCell align="center">
+																<img alt="KDA" style={{maxHeight: '30px'}} src="https://ddragon.leagueoflegends.com/cdn/5.5.1/img/ui/minion.png"></img>
+															</TableCell>
+															<TableCell align="center">
+																<img alt="KDA" style={{maxHeight: '30px'}} src="https://ddragon.leagueoflegends.com/cdn/5.5.1/img/ui/gold.png"></img>
+															</TableCell>
+														</TableRow>
+													</TableHead>
+													<TableBody>
+
+														{ match.participants.map((participant) => {
+
+															if (participant.teamId === team.teamId) {
+																return <TableRow
+																	style={participant.summonerId === playerData.id ? {background: 'rgba(255,205,75,0.5)'} : {background: 'none'}}
+																	key={participant.summonerId}
+																	sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+																>
+
+																	<TableCell component="th" scope="row">
+																		{participant.summonerName}
+																	</TableCell>
+																	<TableCell align="center">
+																		<img style={{maxHeight: '30px'}} alt={participant.championName} src={"http://ddragon.leagueoflegends.com/cdn/12.21.1/img/champion/"+participant.championName+".png"} />
+																	</TableCell>
+																	<TableCell align="center">
+																		<ItemsPopover item={participant.item0}/>
+																		<ItemsPopover item={participant.item1}/>
+																		<ItemsPopover item={participant.item2}/>
+																		<ItemsPopover item={participant.item3}/>
+																		<ItemsPopover item={participant.item4}/>
+																		<ItemsPopover item={participant.item5}/>
+																	</TableCell>
+																	<TableCell align="center">{participant.kills}/{participant.deaths}/{participant.assists}</TableCell>
+																	<TableCell align="center">{participant.totalMinionsKilled + participant.neutralMinionsKilled}</TableCell>
+																	<TableCell align="center">{participant.goldEarned}</TableCell>
+																</TableRow>
+
+															}
+														})}
+													</TableBody>
+												</Table>
+											</TableContainer>
+
+
+									}) }
+
+
+								</Card>;
+
+							}
+						})
 					}
-							
-						
-						
-					
 				</Item>
 			</Grid>
 		</Grid>
