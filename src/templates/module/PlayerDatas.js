@@ -204,9 +204,9 @@ function PlayerDatas() {
 							if (JSON.stringify(match) !== '{}') {
 
 								return <Card sx={{ display: 'flex', marginBottom: '20px'}}>
-									{ match.teams.map((team) => {
-										return <TableContainer sx={{ width: '50%'}} >
-												<Table sx={{ minWidth: 650 }} aria-label="simple table"  style={team.win == false ? {background: 'rgba(255,75,75,0.5)'} : {direction: 'rtl', background: 'rgba(75,240,255,0.5)'}}>
+									{ match.teams.map((team, index) => {
+										return <TableContainer sx={{ width: '50%'}} style={index == 1 ? {direction: 'rtl'} : {}}>
+												<Table sx={{ minWidth: 650 }} aria-label="simple table"  style={team.win == false ? {background: 'rgba(255,75,75,0.5)'} : {background: 'rgba(75,240,255,0.5)'}}>
 													<TableHead>
 														<TableRow>
 															<TableCell>Nom d'invocateur</TableCell>
