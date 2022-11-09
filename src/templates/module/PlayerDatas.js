@@ -206,7 +206,7 @@ function PlayerDatas() {
 								return <Card sx={{ display: 'flex', marginBottom: '20px'}}>
 									{ match.teams.map((team, index) => {
 										return <TableContainer sx={{ width: '50%'}} style={index == 1 ? {direction: 'rtl'} : {}}>
-												<Table sx={{ minWidth: 650 }} aria-label="simple table"  style={team.win == false ? {background: 'rgba(255,75,75,0.5)'} : {background: 'rgba(75,240,255,0.5)'}}>
+												<Table sx={{ minWidth: 650 }} aria-label="simple table">
 													<TableHead>
 														<TableRow>
 															<TableCell>Nom d'invocateur</TableCell>
@@ -228,7 +228,7 @@ function PlayerDatas() {
 															</TableCell>
 														</TableRow>
 													</TableHead>
-													<TableBody>
+													<TableBody style={team.win == false ? {background: 'rgba(255,75,75,0.5)'} : {background: 'rgba(75,240,255,0.5)'}}>
 
 														{ match.participants.map((participant) => {
 
